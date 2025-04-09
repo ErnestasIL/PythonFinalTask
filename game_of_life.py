@@ -15,10 +15,24 @@ def generate_random_grid(width, height, probability=0.3):
 
 def print_grid(grid):
     width = len(grid[0])
-    print("⌈" + "¯" * width + "⌉")
+    print('⌈' + '¯' * width + '⌉')
     for row in grid:
-        print("|" + "".join("■" if cell else " " for cell in row) + "|")
-    print("⌊" + "_" * width + "⌋")
+        print('|' + ''.join('■' if cell else ' ' for cell in row) + '|')
+    print('⌊' + '_' * width + '⌋')
+
+def generate_template(width, height, template_name):
+    templates = {
+        'glider': [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)],
+        'blinker': [(1, 0), (1, 1), (1, 2)]
+    }
+    grid = [[0 for _ in range(width)] for _ in range(height)]
+    center_x = height // 2
+    center_y = width // 2
+    for cx, cy in templates[template_name]:
+        x, y = center_x + cx, center_y + cy
+        if 0 <= x < height and 0 <= y < width:
+            grid[x][y] = 1
+    return grid
 
 def count_life(grid, x, y):
     height = len(grid)
@@ -52,20 +66,47 @@ def update_grid(grid):
     return new_grid
 
 
+def get_integer_input(prompt, min_value=10):
+    while True:
+        try:
+            value = int(input(prompt))
+            if value >= min_value:
+                return value
+            print(f'Value must be at least {min_value}!')
+        except ValueError:
+            print('Please use a number')
+
+
 def main():
-    width = 40
-    height = 20
-    iterations = 10
-    delay = 0.5
-    grid = generate_random_grid(width, height)
-    for iteration in range(iterations):
-        clear_screen()
-        print(f"Iteration: {iteration + 1}")
-        print_grid(grid)
-        grid = update_grid(grid)
-        if iteration < iterations - 1:
-            time.sleep(delay)
+    while True:
+        print('Game of Life')
+        width = get_integer_input('Select games width (at least 10):')
+        height = get_integer_input('Select games height (at least 10): ')
+        iterations = get_integer_input('Enter a number of iterations (at least 3):', 3)
 
+        while True:
+            print('\nChoose starting pattern:')
+            print('1. Random')
+            print('2. Glider')
+            print('3. Blinker')
+            choice = input('Enter choice (1-3): ')
+            if choice in ('1', '2', '3'):
+                break
+            print('Invalid choice!')
+        if choice == '1':
+            grid = generate_random_grid(width, height)
+        elif choice == '2':
+            grid = generate_template(width, height, 'glider')
+        else:
+            grid = generate_template(width, height, 'blinker')
+        for iteration in range(iterations):
+            clear_screen()
+            print(f'Iteration: {iteration + 1}/{iterations}')
+            print_grid(grid)
+            grid = update_grid(grid)
+            time.sleep(0.5)
 
-if __name__ == "__main__":
+        if input("\nPress Enter to restart or 'q' to quit: ").lower() == 'q':
+            break
+if __name__ == '__main__':
     main()
